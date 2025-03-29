@@ -151,10 +151,9 @@ public class McpClientExtensionsTests : LoggedTest
                 Content = new Content
                 {
                     Type = "resource",
-                    Resource = new ResourceContents
+                    Resource = new BlobResourceContents
                     {
-                        Text = "Resource text",
-                        Blob = Convert.ToBase64String(new byte[] { 4, 5, 6 }),
+                        Blob = "Resource text",
                         MimeType = "application/octet-stream"
                     }
                 }
@@ -188,7 +187,7 @@ public class McpClientExtensionsTests : LoggedTest
         Assert.Equal("endTurn", result.StopReason);
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await _cts.CancelAsync();
 
