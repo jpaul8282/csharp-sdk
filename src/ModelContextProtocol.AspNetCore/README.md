@@ -23,15 +23,15 @@ To get started, install the package from NuGet
 
 ```
 dotnet new web
-dotnet add package ModelContextProtocol.AspNetcore --prerelease
+dotnet add package ModelContextProtocol.AspNetCore --prerelease
 ```
 
 ## Getting Started
 
 ```csharp
 // Program.cs
-using ModelContextProtocol;
-using ModelContextProtocol.AspNetCore;
+using ModelContextProtocol.Server;
+using System.ComponentModel;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(options =>

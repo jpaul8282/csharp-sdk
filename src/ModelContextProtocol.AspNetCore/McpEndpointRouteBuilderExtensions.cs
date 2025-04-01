@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +11,7 @@ using ModelContextProtocol.Utils.Json;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
-namespace ModelContextProtocol.AspNetCore;
+namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
 /// Extension methods for <see cref="IEndpointRouteBuilder"/> to add MCP endpoints.
@@ -40,7 +39,7 @@ public static class McpEndpointRouteBuilderExtensions
             var requestAborted = context.RequestAborted;
 
             response.Headers.ContentType = "text/event-stream";
-            response.Headers.CacheControl = "no-cache";
+            response.Headers.CacheControl = "no-store";
 
             var sessionId = MakeNewSessionId();
             await using var transport = new SseResponseStreamTransport(response.Body, $"/message?sessionId={sessionId}");
@@ -53,10 +52,10 @@ public static class McpEndpointRouteBuilderExtensions
             try
             {
                 var transportTask = transport.RunAsync(cancellationToken: requestAborted);
-                runSession ??= RunSession;
 
                 try
                 {
+                    runSession ??= RunSession;
                     await runSession(context, server, requestAborted);
                 }
                 finally
