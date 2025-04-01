@@ -82,29 +82,27 @@ internal sealed class McpClient : McpJsonRpcEndpoint, IMcpClient
         {
             // Connect transport
             _sessionTransport = await _clientTransport.ConnectAsync(cancellationToken).ConfigureAwait(false);
-            // We don't want the ConnectAsync token to cancel the session after we've successfully connected.
-            // The base class handles cleaning up the session in DisposeAsync without our help.
-            StartSession(_sessionTransport, fullSessionCancellationToken: CancellationToken.None);
+            StartSession(_sessionTransport);
 
             // Perform initialization sequence
             using var initializationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             initializationCts.CancelAfter(_options.InitializationTimeout);
 
-        try
-        {
-            // Send initialize request
-            var initializeResponse = await SendRequestAsync<InitializeResult>(
-                new JsonRpcRequest
-                {
-                    Method = RequestMethods.Initialize,
-                    Params = new InitializeRequestParams()
+            try
+            {
+                // Send initialize request
+                var initializeResponse = await SendRequestAsync<InitializeResult>(
+                    new JsonRpcRequest
                     {
-                        ProtocolVersion = _options.ProtocolVersion,
-                        Capabilities = _options.Capabilities ?? new ClientCapabilities(),
-                        ClientInfo = _options.ClientInfo
-                    }
-                },
-                initializationCts.Token).ConfigureAwait(false);
+                        Method = RequestMethods.Initialize,
+                        Params = new InitializeRequestParams()
+                        {
+                            ProtocolVersion = _options.ProtocolVersion,
+                            Capabilities = _options.Capabilities ?? new ClientCapabilities(),
+                            ClientInfo = _options.ClientInfo
+                        }
+                    },
+                    initializationCts.Token).ConfigureAwait(false);
 
                 // Store server information
                 _logger.ServerCapabilitiesReceived(EndpointName,
