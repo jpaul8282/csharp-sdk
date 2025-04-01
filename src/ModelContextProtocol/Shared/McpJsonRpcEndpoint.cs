@@ -15,7 +15,7 @@ namespace ModelContextProtocol.Shared;
 /// This is especially true as a client represents a connection to one and only one server, and vice versa.
 /// Any multi-client or multi-server functionality should be implemented at a higher level of abstraction.
 /// </summary>
-internal abstract class McpJsonRpcEndpoint : IAsyncDisposable
+internal abstract class McpJsonRpcEndpoint : IMcpEndpoint, IAsyncDisposable
 {
     private readonly RequestHandlers _requestHandlers = [];
     private readonly NotificationHandlers _notificationHandlers = [];
@@ -44,8 +44,11 @@ internal abstract class McpJsonRpcEndpoint : IAsyncDisposable
     public void AddNotificationHandler(string method, Func<JsonRpcNotification, Task> handler)
         => _notificationHandlers.Add(method, handler);
 
-    public Task<TResult> SendRequestAsync<TResult>(JsonRpcRequest request, CancellationToken cancellationToken = default) where TResult : class
-        => GetSessionOrThrow().SendRequestAsync<TResult>(request, cancellationToken);
+    public async Task<TResult> SendRequestAsync<TResult>(JsonRpcRequest request, CancellationToken cancellationToken = default) where TResult : class
+    {
+        using var registration = cancellationToken.Register(() => _ = this.NotifyCancelAsync(request.Id));
+        return await GetSessionOrThrow().SendRequestAsync<TResult>(request, cancellationToken);
+    }
 
     public Task SendMessageAsync(IJsonRpcMessage message, CancellationToken cancellationToken = default)
         => GetSessionOrThrow().SendMessageAsync(message, cancellationToken);
